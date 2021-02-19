@@ -1,0 +1,16 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: a8s-instance-user-role
+rules:
+- apiGroups:
+  - postgresql.anynines.com
+  resources:
+  - postgresqls
+  verbs:
+  - list
+  - create
+  - delete
+  - get
