@@ -7,8 +7,11 @@ metadata:
 rules:
 - apiGroups:
   - postgresql.anynines.com
+  - backups.anynines.com
   resources:
   - postgresqls
+  - backups
+  - recoveries
   verbs:
   - list
   - create

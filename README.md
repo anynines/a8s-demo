@@ -37,6 +37,8 @@ kubectl create secret docker-registry a8s-registry --docker-server=${DOCKER_SERV
 ```shell
 kubectl apply -f deployment/cluster-operators.yaml
 kubectl get pods -w --namespace postgresql-system # 2/2 should appear after some time
+kubectl apply -f deployment/backup-operator.yaml
+kubectl get pods --namespace a8s-system # 2/2 should be ready after some time
 ```
 
 Then we need to apply some RBAC files so the current binding user can work with
@@ -114,6 +116,21 @@ kubectl get pods -w
 
 kubectl get PostgreSQL
 ```
+
+## Demo backup and restore
+
+- Insert AWS access credentials into the following files:
+    - `./access-key-id`
+    - `./secret-access-key`
+```shell
+kubectl create secret generic aws-credentials \
+      --from-file=./access-key-id \
+        --from-file=./secret-access-key
+```
+- `kubectl apply -f deployment/backup.yaml`
+- Delete blog post entry
+- `kubectl apply -f deployment/recovery.yaml`
+- Show restored blog post entry
 
 # Requirements
 
@@ -205,7 +222,7 @@ docker push ${REGISTRY}/${PROJECT}/backup-agent:${VERSION}
 - [ ] hosted registry solution so the location of the image stays the same ->
   a9s Harbor as per a8s meeting 2021-02-24
 - [ ] automate some many manual steps, maybe via `kustomize` run!?
-- [ ] a8s Backup Manager integration
+- [x] a8s Backup Manager integration
 - [ ] service bindings
 - [ ] What is the future product name?
 - [ ] master switchover
