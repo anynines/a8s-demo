@@ -440,7 +440,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: a8s-backup-controller-manager:latest
+        image: c4aeb71c-dd2a-4e6e-9385-1c3bb839307c.de.a9s.eu/demo/a8s-backup-manager:0.1.0
         livenessProbe:
           httpGet:
             path: /healthz

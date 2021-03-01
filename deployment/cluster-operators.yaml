@@ -1090,7 +1090,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: c4aeb71c-dd2a-4e6e-9385-1c3bb839307c.de.a9s.eu/demo/postgresql-controller:0.2.0
+        image: c4aeb71c-dd2a-4e6e-9385-1c3bb839307c.de.a9s.eu/demo/postgresql-controller:0.1.0
         livenessProbe:
           httpGet:
             path: /healthz

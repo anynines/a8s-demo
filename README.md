@@ -32,12 +32,29 @@ export DOCKER_EMAIL=${DOCKER_USERNAME}@anynines.com
 kubectl create secret docker-registry a8s-registry --docker-server=${DOCKER_SERVER} --docker-username=${DOCKER_USERNAME} --docker-password=${DOCKER_PASSWORD} --docker-email=${DOCKER_USERNAME}@anynines.com
 ```
 
-## Install a9s Operators
+## Install a8s Operators
 
 ```shell
 kubectl apply -f deployment/cluster-operators.yaml
 kubectl get pods -w --namespace postgresql-system # 2/2 should appear after some time
-kubectl apply -f deployment/backup-operator.yaml
+```
+
+The a8s Backup Manager components require AWS credentials.
+
+Insert AWS access credentials into the following files:
+- `./access-key-id`
+- `./secret-access-key`
+
+Install a8s Backup Manager components:
+
+```shell
+kubectl create secret generic aws-credentials \
+      --from-file=./access-key-id \
+        --from-file=./secret-access-key
+```
+
+```shell
+kubectl apply -f deployment/a8s-backup-manager.yaml
 kubectl get pods --namespace a8s-system # 2/2 should be ready after some time
 ```
 
@@ -119,15 +136,8 @@ kubectl get PostgreSQL
 
 ## Demo backup and restore
 
-- Insert AWS access credentials into the following files:
-    - `./access-key-id`
-    - `./secret-access-key`
-```shell
-kubectl create secret generic aws-credentials \
-      --from-file=./access-key-id \
-        --from-file=./secret-access-key
-```
 - `kubectl apply -f deployment/backup.yaml`
+
 - Delete blog post entry
 - `kubectl apply -f deployment/recovery.yaml`
 - Show restored blog post entry
