@@ -125,6 +125,21 @@ open https://demo-apps-DASHBOARD_URL
 
 Create a new blog post entry.
 
+Next we'll create a backup of the current database:
+
+```shell
+cat deployment/backup.yaml
+
+kubectl apply -f deployment/backup.yaml
+```
+
+In order to test restore, we'll first create another blog entry and then
+restore to the latest backup.
+
+```shell
+kubectl apply -f deployment/recovery.yaml
+```
+
 Delete service instance:
 ```shell
 kubectl delete -f deployment/instance.yaml
@@ -133,14 +148,6 @@ kubectl get pods -w
 
 kubectl get PostgreSQL
 ```
-
-## Demo backup and restore
-
-- `kubectl apply -f deployment/backup.yaml`
-
-- Delete blog post entry
-- `kubectl apply -f deployment/recovery.yaml`
-- Show restored blog post entry
 
 # Requirements
 
