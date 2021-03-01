@@ -100,7 +100,16 @@ Then we set the credentials for the demo app.
 
 ```shell
 vim deployment/demo-app-secret.yaml # use base64 encoded password
+
+# We need to create a database demo on our own:
+#
+# kubectl run demo-pg --rm -i --tty --image postgres:13.1 --pod-running-timeout=3m -- bash
+# export PGPASSWORD=password
+# psql -U postgres -p 5432 -h pg-demo-cluster-master.default.svc.cluster.local
+# create database demo;
+
 kubectl apply -f deployment/demo-app-secret.yaml
+
 ```
 
 Deploy the app:
