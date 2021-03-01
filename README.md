@@ -55,7 +55,7 @@ kubectl create secret generic aws-credentials \
 
 ```shell
 kubectl apply -f deployment/a8s-backup-manager.yaml
-kubectl get pods --namespace a8s-system # 2/2 should be ready after some time
+kubectl get pods -w --namespace a8s-system # 2/2 should be ready after some time
 ```
 
 Then we need to apply some RBAC files so the current binding user can work with
