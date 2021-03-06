@@ -239,7 +239,10 @@ kubectl describe StorageClasses
 
 ## Images
 
-There is an a9s Harbor instance on a9s PaaS.
+This step will be obsolete once the a8s team has a production ready private
+registry.
+
+Currently, there is an a9s Harbor instance on a9s PaaS.
 
 The CF service key `demo` has read-only access to the project `demo`
 on a9s PaaS.
@@ -250,12 +253,10 @@ cf service a8s-images-dev
 cf service-key a8s-images-dev demo
 ```
 
-
 ### Push Images Step (Optional)
 
 This step shows how to use a9s Harbor to host (dev) images in the Harbor
 registry.
-
 
 ```shell
 export VERSION=0.2.0
