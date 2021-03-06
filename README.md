@@ -39,6 +39,8 @@ kubectl create secret docker-registry a8s-registry --docker-server=${DOCKER_SERV
 ```shell
 kubectl apply -f deployment/cluster-operators.yaml
 kubectl get pods -w --namespace postgresql-system # 2/2 should appear after some time
+# TODO: we should provide commands how to wait till the system settles down
+# after installation.
 ```
 
 The a8s Backup Manager components require AWS credentials.
@@ -58,6 +60,8 @@ kubectl create secret generic aws-credentials \
 ```shell
 kubectl apply -f deployment/a8s-backup-manager.yaml
 kubectl get pods -w --namespace a8s-system # 2/2 should be ready after some time
+# TODO: we should provide commands how to wait till the system settles down
+# after installation
 ```
 
 Then we need to apply some RBAC files so the current binding user can work with
@@ -71,10 +75,14 @@ vim rbac/a8s-instance-user-binding.yaml # set your binding user from `cf service
 kubectl apply -f rbac/a8s-instance-user-binding.yaml
 
 kubectl get PostgreSQL # should work  without throwing a permission error
+# the above cmd is optional to see we have access on that particular Kubernetes
+# provider to the custom resource PostgreSQL
 ```
 
 
 ## Instance Creation, Usage and Deletion
+
+Let's spawn up a new a8s data service instance:
 
 ```shell
 cat deployment/instance.yaml
@@ -82,8 +90,9 @@ cat deployment/instance.yaml
 kubectl apply -f deployment/instance.yaml
 
 kubectl get pods -w
-
 kubectl get PostgreSQL
+# TODO: we should probably provide commands/exaplanation here what to expect
+# after we spawn up a new instance
 ```
 
 Next we want to deploy a PostgreSQL demo app (`a9s-postgresql-app`) that will
@@ -125,6 +134,7 @@ kubectl apply -f deployment/demo-app-deployment.yaml
 kubectl apply -f deployment/demo-app-service.yaml
 
 kubectl get pods -w
+# TODO: we should provide commands to wait for the demo app
 ```
 
 Expose the app to the outside world:
@@ -163,8 +173,8 @@ Delete service instance:
 kubectl delete -f deployment/instance.yaml
 
 kubectl get pods -w
-
 kubectl get PostgreSQL
+# TODO: explanation what to expect here/what to wait for
 ```
 
 # Requirements
