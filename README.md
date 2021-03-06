@@ -59,6 +59,8 @@ Insert AWS access credentials into the following files:
 - `./access-key-id`
 - `./secret-access-key`
 
+**WATCH OUT** to not commit those files.
+
 ```shell
 kubectl create secret generic aws-credentials \
       --from-file=./access-key-id \
