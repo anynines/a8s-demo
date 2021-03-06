@@ -43,13 +43,21 @@ kubectl get pods -w --namespace postgresql-system # 2/2 should appear after some
 # after installation.
 ```
 
-The a8s Backup Manager components require AWS credentials.
+Next we want to install a8s Backup Manager to backup and restore later on in
+the demo the a8s data service instance.
+
+The a8s Backup Manager components require AWS credentials to manage
+backup files on S3.
+
+FIXME: store them in 1password somewhere? Discuss with sales engineer
+how approach certain things.
+For the time being, you need an AWS access key id and secret access key for
+the bucket `a8s-postgresql` in the region `eu-central-1` with read-write
+permissions.
 
 Insert AWS access credentials into the following files:
 - `./access-key-id`
 - `./secret-access-key`
-
-Install a8s Backup Manager components:
 
 ```shell
 kubectl create secret generic aws-credentials \
@@ -57,6 +65,7 @@ kubectl create secret generic aws-credentials \
         --from-file=./secret-access-key
 ```
 
+Install a8s Backup Manager components:
 ```shell
 kubectl apply -f deployment/a8s-backup-manager.yaml
 kubectl get pods -w --namespace a8s-system # 2/2 should be ready after some time
