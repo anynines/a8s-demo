@@ -1,6 +1,7 @@
 # a8s Demo
 
-**WIP**
+This repo is **WIP**.
+The goal is to provide instructions to demo the new a8s product in the future.
 
 # IMPORTANT
 
@@ -14,7 +15,8 @@ empty.
 
 ## Setup Private Registry
 
-FIXME: Does not work yet. a9s Kubernetes cannot use a9s Harbor's private projects.
+TODO: a9s Kubernetes can use a9s Harbor's private projects. But the current
+demo does use a public project.
 
 ```shell
 export CF_HARBOR_INSTANCE_NAME=a8s-images-dev
@@ -64,7 +66,8 @@ the new custom resourecs:
 ```shell
 kubectl apply -f rbac/a8s-instance-user-role.yaml
 
-vim rbac/a8s-instance-user-binding.yaml # and set your binding user
+vim rbac/a8s-instance-user-binding.yaml # set your binding user from `cf service-key ${INSTANCE_NAME} demo`
+
 kubectl apply -f rbac/a8s-instance-user-binding.yaml
 
 kubectl get PostgreSQL # should work  without throwing a permission error
@@ -104,12 +107,11 @@ vim deployment/demo-app-secret.yaml # use base64 encoded password (leave out bas
 # We need to create a database demo on our own:
 #
 # kubectl run demo-pg --rm -i --tty --image postgres:13.1 --pod-running-timeout=3m -- bash
-# export PGPASSWORD=password
+# export PGPASSWORD=password # use the  password from above postgres.credentials.demo-pg-cluster command
 # psql -U postgres -p 5432 -h demo-pg-cluster-master.default.svc.cluster.local
 # create database demo;
 
 kubectl apply -f deployment/demo-app-secret.yaml
-
 ```
 
 Deploy the app:
@@ -124,7 +126,10 @@ kubectl get pods -w
 Expose the app to the outside world:
 
 ```shell
-vim deployment/demo-app-ingress.yaml # TODO: change values
+vim deployment/demo-app-ingress.yaml
+# change DASHBOARD_URL placeholder to the url part after `https://ddashboard-apps`
+# from `dashboard_url`'s property in `cf service-key ${INSTANCE_NAME} demo`.
+
 kubectl apply -f deployment/demo-app-ingress.yaml
 ```
 
@@ -245,6 +250,7 @@ docker push ${REGISTRY}/${PROJECT}/backup-agent:${VERSION}
 
 - [x] demo app (a9s-postgresql-app)
 - [ ] get sales engineer involved
+- [ ] use a9s Harbor private registry
 - [ ] hosted registry solution so the location of the image stays the same ->
   a9s Harbor as per a8s meeting 2021-02-24
 - [ ] automate some many manual steps, maybe via `kustomize` run!?
