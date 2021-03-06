@@ -152,7 +152,7 @@ Expose the app to the outside world:
 
 ```shell
 vim deployment/demo-app-ingress.yaml
-# change DASHBOARD_URL placeholder to the url part after `https://ddashboard-apps`
+# change DASHBOARD_URL placeholder to the url part after `https://dashboard-apps`
 # from `dashboard_url`'s property in `cf service-key ${INSTANCE_NAME} demo`.
 
 kubectl apply -f deployment/demo-app-ingress.yaml
