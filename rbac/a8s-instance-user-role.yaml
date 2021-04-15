@@ -8,12 +8,15 @@ rules:
 - apiGroups:
   - postgresql.anynines.com
   - backups.anynines.com
+  - servicebindings.anynines.com
   resources:
   - postgresqls
   - backups
   - recoveries
+  - servicebindings
   verbs:
   - list
+  - watch
   - create
   - patch
   - get
