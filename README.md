@@ -166,8 +166,7 @@ Finally, we can deploy the app:
 kubectl apply --filename deployment/demo-app-deployment.yaml
 kubectl apply --filename deployment/demo-app-service.yaml
 
-kubectl get pods --watch
-# TODO: we should provide commands to wait for the demo app
+kubectl get pods --selector app=demo-app --watch
 ```
 
 Expose the app to the outside world:
