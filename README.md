@@ -37,8 +37,8 @@ kubectl create secret docker-registry a8s-registry --docker-server=${DOCKER_SERV
 ## Install a8s Operators
 
 ```shell
-kubectl apply -f deployment/cluster-operators.yaml
-kubectl get pods -w --namespace postgresql-system # 2/2 should appear after some time
+kubectl apply --filename deployment/cluster-operators.yaml
+kubectl get pods --watch --namespace postgresql-system # 2/2 should appear after some time
 # TODO: we should provide commands how to wait till the system settles down
 # after installation.
 ```
@@ -69,21 +69,35 @@ kubectl create secret generic aws-credentials \
 
 Install a8s Backup Manager components:
 ```shell
-kubectl apply -f deployment/a8s-backup-manager.yaml
-kubectl get pods -w --namespace a8s-system # 2/2 should be ready after some time
+kubectl apply --filename deployment/a8s-backup-manager.yaml
+kubectl get pods --watch --namespace a8s-system # 2/2 should be ready after some time
 # TODO: we should provide commands how to wait till the system settles down
 # after installation
 ```
 
-Then we need to apply some RBAC files so the current binding user can work with
-the new custom resourecs:
+Next, we need to install the service binding controller. Run the following commands:
 
 ```shell
-kubectl apply -f rbac/a8s-instance-user-role.yaml
+kubectl apply --filename deployment/a8s-service-binding-controller.yaml # deploy the service binding controller.
+kubectl get pods --watch --namespace a8s-system --selector service-binding-controller # observe the deployment to see when it's done.
+```
+
+After the last command, wait until the output shows that 2/2 containers are up and running:
+
+```shell
+NAME                                                  READY   STATUS    RESTARTS   AGE
+service-binding-controller-manager-594d7fbf68-vwwx5   2/2     Running   0          30s
+```
+
+Finally, we need to apply some RBAC files so the current binding user can work with
+the new custom resources:
+
+```shell
+kubectl apply --filename rbac/a8s-instance-user-role.yaml
 
 vim rbac/a8s-instance-user-binding.yaml # set your binding user from `cf service-key ${INSTANCE_NAME} demo`
 
-kubectl apply -f rbac/a8s-instance-user-binding.yaml
+kubectl apply --filename rbac/a8s-instance-user-binding.yaml
 
 kubectl get PostgreSQL # should work  without throwing a permission error
 # the above cmd is optional to see we have access on that particular Kubernetes
@@ -98,9 +112,9 @@ Let's spawn up a new a8s data service instance:
 ```shell
 cat deployment/instance.yaml
 
-kubectl apply -f deployment/instance.yaml
+kubectl apply --filename deployment/instance.yaml
 
-kubectl get pods -w
+kubectl get pods --watch
 kubectl get PostgreSQL
 # TODO: we should probably provide commands/exaplanation here what to expect
 # after we spawn up a new instance
@@ -113,38 +127,46 @@ use the new PostgreSQL instance to store data.
 cat deployment/demo-app-deployment.yaml
 ```
 
-First we need to get the credentials to connect to the PostgreSQL database.
-
-```
-kubectl get secret postgres.credentials.demo-pg-cluster -o 'jsonpath={.data.password}' |  base64 -d
-```
-
-Then we set the credentials for the demo app.
+First, we need to create a service binding resource that will configure a user for the demo app in
+the PostgreSQL database and store the credentials for that user in a Kubernetes API secret.
 
 ```shell
-vim deployment/demo-app-secret.yaml # use base64 encoded password (leave out base64 -d in the command above)
-
-kubectl apply -f deployment/demo-app-secret.yaml
+cat deployment/service-binding.yaml # show the service binding manifest and explain it
+kubectl apply --filename deployment/service-binding.yaml # create the service binding manifest
+kubectl get sb --output yaml --watch # check whether the service binding has been successfully created; "sb" is shorthand for "servicebinding"
 ```
+
+The last command outputs the whole YAML for the service binding, which is very verbose. You should
+just comment on the status fields of the service bindings, which should look like this:
+
+```shell
+... other fields ...
+
+status:
+  implemented: true
+  instanceUID: 2f4cee2d-d098-4c37-9f75-2a279079728b
+  secret:
+    name: sb-sample-service-binding
+    namespace: default
+
+... other fields ...
+```
+
+If the service binding was successfully configured, you should see `status.implemented: true`.
 
 We need also need to create a database demo on our own for the demo app:
 
 ```shell
-kubectl run demo-pg --rm -i --tty --image postgres:13.1 --pod-running-timeout=3m -- bash
-$ export PGPASSWORD=password # use the  password from above postgres.credentials.demo-pg-cluster command
-$  psql -U postgres -p 5432 -h demo-pg-cluster-master.default.svc.cluster.local
-$ create database demo;
-$ exit
-$ exit
+kubectl exec demo-pg-cluster-0 --container postgres -- "psql" "-U" "postgres" "-c" "CREATE DATABASE demo;"
 ```
 
 Finally, we can deploy the app:
 
 ```shell
-kubectl apply -f deployment/demo-app-deployment.yaml
-kubectl apply -f deployment/demo-app-service.yaml
+kubectl apply --filename deployment/demo-app-deployment.yaml
+kubectl apply --filename deployment/demo-app-service.yaml
 
-kubectl get pods -w
+kubectl get pods --watch
 # TODO: we should provide commands to wait for the demo app
 ```
 
@@ -155,7 +177,7 @@ vim deployment/demo-app-ingress.yaml
 # change DASHBOARD_URL placeholder to the url part after `https://dashboard-apps`
 # from `dashboard_url`'s property in `cf service-key ${INSTANCE_NAME} demo`.
 
-kubectl apply -f deployment/demo-app-ingress.yaml
+kubectl apply --filename deployment/demo-app-ingress.yaml
 ```
 
 ```shell
@@ -169,21 +191,21 @@ Next we'll create a backup of the current database:
 ```shell
 cat deployment/backup.yaml
 
-kubectl apply -f deployment/backup.yaml
+kubectl apply --filename deployment/backup.yaml
 ```
 
 In order to test restore, we'll first create another blog entry and then
 restore to the latest backup.
 
 ```shell
-kubectl apply -f deployment/recovery.yaml
+kubectl apply --filename deployment/recovery.yaml
 ```
 
 Delete service instance:
 ```shell
-kubectl delete -f deployment/instance.yaml
+kubectl delete --filename deployment/instance.yaml
 
-kubectl get pods -w
+kubectl get pods --watch
 kubectl get PostgreSQL
 # TODO: explanation what to expect here/what to wait for
 ```
@@ -233,7 +255,7 @@ kubectl get pods # should work
 
 Setup storage for persistent volumes:
 ```shell
-kubectl apply -f deployment/a9s-kubernetes-storageclass.yaml
+kubectl apply --filename deployment/a9s-kubernetes-storageclass.yaml
 kubectl describe StorageClasses
 ```
 
@@ -281,7 +303,7 @@ docker push ${REGISTRY}/${PROJECT}/backup-agent:${VERSION}
   a9s Harbor as per a8s meeting 2021-02-24
 - [ ] automate some many manual steps, maybe via `kustomize` run!?
 - [x] a8s Backup Manager integration
-- [ ] service bindings
+- [x] service bindings
 - [ ] What is the future product name?
 - [ ] master switchover
 - [ ] setup a demo user on a9s PaaS? -> sales engineer
