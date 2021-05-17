@@ -75,9 +75,6 @@ spec:
                     description: Type is a short camelCase message describing the last observed condition of the backup or recovery. Can be one of `succeeded`, `inProgress`, `failed`.
                     type: string
                 type: object
-              podUsedIP:
-                description: PodUsedIP is used to continue checking the status of a backup from the same Backup Agent.
-                type: string
               podUsedNamespacedName:
                 description: 'PodUsedNamespacedName is the namespaced name of the DSI Pod to which the backup request was sent. TODO: Represent this jointly with `PodUsedID` (below) via a PodRef.'
                 type: string
@@ -247,10 +244,19 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - pods
+  - secrets
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - get
   - list
+  - watch
 - apiGroups:
   - backups.anynines.com
   resources:
@@ -392,6 +398,22 @@ metadata:
   namespace: a8s-system
 ---
 apiVersion: v1
+data:
+  config.yaml: |
+    config:
+      cloud_configuration:
+        provider: "AWS"
+        container: "a8s-postgresql"
+        secret_name: "aws-credentials"
+        region: "eu-central-1"
+      encryption:
+        password: "password"
+kind: ConfigMap
+metadata:
+  name: backup-storage-config
+  namespace: a8s-system
+---
+apiVersion: v1
 kind: Service
 metadata:
   labels:
@@ -440,7 +462,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: c4aeb71c-dd2a-4e6e-9385-1c3bb839307c.de.a9s.eu/demo/a8s-backup-manager:0.1.0
+        image: c4aeb71c-dd2a-4e6e-9385-1c3bb839307c.de.a9s.eu/demo/a8s-backup-manager:v0.2.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -463,6 +485,13 @@ spec:
             memory: 20Mi
         securityContext:
           allowPrivilegeEscalation: false
+        volumeMounts:
+        - mountPath: /etc/config
+          name: config-volume
       securityContext:
         runAsUser: 65532
       terminationGracePeriodSeconds: 10
+      volumes:
+      - configMap:
+          name: backup-storage-config
+        name: config-volume
