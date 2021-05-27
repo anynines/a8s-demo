@@ -209,6 +209,119 @@ kubectl get PostgreSQL
 # TODO: explanation what to expect here/what to wait for
 ```
 
+## Logging
+
+### Forward Logs via Syslog to a9s LogMe
+
+In order to see logs for the Kubernetes instance on an a9s LogMe instance, we
+need to install a `DaemonSet` that will collect those logs from the Kubernetes
+nodes and forward them to an a9s LogMe instance.
+
+A `DaemonSet` ensures that all (or some) Nodes run a copy of a Pod. The pod in
+our case will run `fluentd`. The `fluentd` tool will read the a9s Kubernetes
+logs from the disk and forward them via syslog protocol to an a9s LogMe instance.
+
+We first need to create an a9s LogMe instance:
+
+```shell
+cf create-service a9s-logme logme-single-small logme-demo-instance
+```
+
+Once the instance is available, we create a service key in order to get the
+relevant information where the syslog endpoint is:
+
+```shell
+cf create-service-key logme-demo-instance binding1
+cf service-key logme-demo-instance binding1
+
+{
+ "host": "syslog://lod855258-logstash.service.dc1.a9ssvc:514",
+ "password": "a9s3e5644d6fd30994fa58c9a2a9daec65103bfcf45",
+ "username": "a9s82018bc6554ffcf3df0d91dd1415ef88334d1ab0"
+}
+```
+
+In the example output above, the syslog destination host would be
+`lod855258-logstash.service.dc1.a9ssvc` and the syslog port `514`.
+
+Next we can open the Kibana dashboard.
+We can use the `cf service logme-demo-instance` command to display the
+dashboard URL. Open the dashboard URL in a browser and authenticate.
+
+You will be presented first with the a9s Service Dashboard. There is a link to
+the Kibana dashboard at the top. Follow that link.
+
+The Kibana dashboard will first present a page to `Configure an index pattern`.
+Since we haven't received any logs so far, we cannot proceed yet.
+
+We first need to install the logging components on the a9s Kubernetes instance
+to stream the log message from the nodes to our a9s LogMe instance.
+
+Before applying the relevant `yaml` files, we need to set the correct a9s Logme
+destination host in the file `deployment/a8s-node-level-logging-syslog.yaml`.
+The environment variable named `SYSLOG_HOST` needs to be set to the a9s LogMe
+host name from the service binding above.
+
+So in the example output from above, we would use the host name
+`lod855258-logstash.service.dc1.a9ssvc`
+and set the `SYSLOG_HOST` variable to that value.
+
+Afterwards we can apply the logging components:
+
+```shell
+kubectl apply -f deployment/a8s-node-level-logging-permissions.yaml
+kubectl apply -f deployment/a8s-node-level-logging-syslog.yaml
+```
+
+The creation of the logging component can be monitored via:
+
+```shell
+kubectl get daemonset -n kube-system -w
+```
+
+The `a8s-system` namespace should now list pods prefixed with the name
+`fluentd`.
+
+```shell
+kubectl get pods -n a8s-system
+```
+
+```
+NAME                                                  READY   STATUS    RESTARTS   AGE
+a8s-backup-controller-manager-6d6946896d-9gb8g        2/2     Running   0          7d21h
+fluentd-tdqql                                         1/1     Running   0          54s
+fluentd-vbjp7                                         1/1     Running   0          55s
+service-binding-controller-manager-594d7fbf68-s6jr4   2/2     Running   1          7d21h
+```
+
+Now we can get back to the Kibana dashboard. In the mean time the a9s LogMe
+component should have received syslog messages.
+
+The Kibana dashboard should now display `@timestamp` for the field
+`Time Filter field name`. We need to click on the button `Create`.
+
+Next we need to click on the page `Discover` from the left menu. We should see
+the incoming syslog messages from our a9s Kubernetes system.
+
+We can use the search field and enter `demo` to see the PostgreSQL cluster
+messages.
+
+
+We're done with the logging presentation.
+
+Let's get rid of the a9s LogMe instance and the installed logging components on
+the a9s Kubernetes instance.
+
+```shell
+cf delete-service-key logme-demo-instance binding1
+cf delete-service logme-demo-instance
+```
+
+```shell
+kubectl delete -f deployment/a8s-node-level-logging-syslog.yaml
+kubectl delete -f deployment/a8s-node-level-logging-permissions.yaml
+```
+
 # Requirements
 
 In order to demonstrate the a9s Data Services product , we need the following
