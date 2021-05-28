@@ -322,6 +322,97 @@ kubectl delete -f deployment/a8s-node-level-logging-syslog.yaml
 kubectl delete -f deployment/a8s-node-level-logging-permissions.yaml
 ```
 
+### Deploy EFK (Elasticsearch, Fluentd and Kibana) stack
+
+#### Install Elasticsearch
+
+Elasticsearch is the distributed, RESTful search and analytics engine which we
+use to store, search and manage our cluster's logs. The Elasticsearch pods
+are deployed as a part of a [StatefulSet][statefulset] since they require
+persistent storage for the logs. This also allows us to span the pods over
+multiple availability zones for high availability in order to limit possible
+downtime.
+
+```bash
+kubectl apply -f deployment/a8s-namespace.yaml
+kubectl apply -f deployment/elasticsearch.yaml
+kubectl rollout status statefulset/es-cluster --namespace a8s-system
+```
+
+[statefulSet]: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+
+#### Install Kibana
+
+Kibana is a window into Elasticsearch. It provides a browser-based analytics
+and search dashboard. We deploy it as a Kubernetes [Deployment][deployment]
+since we don't require storage for Kibana.
+
+```bash
+kubectl apply -f deployment/kibana.yaml
+kubectl rollout status deployment/kibana --namespace a8s-system
+```
+
+[deployment]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
+#### Install Fluentd DaemonSet
+
+In order to see logs for the Kubernetes instance via Elasticsearch and Kibana,
+we need to install a `DaemonSet` that will collect those logs from the
+Kubernetes nodes and forward them to a Elasticsearch instance in our cluster.
+
+A `DaemonSet` ensures that all (or some) Nodes run a copy of a Pod. The pod in
+our case will run `fluentd`. The `fluentd` tool will read the a9s Kubernetes
+logs from the disk and forward them via logstash format to the Elasticsearch
+instance.
+
+```shell
+kubectl apply -f deployment/a8s-node-level-logging-permissions.yaml
+kubectl apply -f deployment/a8s-node-level-logging-elasticsearch.yaml
+```
+
+#### Using Dashboard
+
+First, get the Kibana pod name
+
+```shell
+kibana=$(kubectl get pod -l app=kibana --namespace a8s-system | grep kibana | awk -F ' ' '{print $1}')
+```
+
+Use port-forward to connect to the Kibana pod.
+
+```shell
+kubectl port-forward $kibana 5601:5601 --namespace=a8s-system
+```
+
+Open the Kibana dashboard in Browser link in browser.
+
+```shell
+open http://localhost:5601
+```
+
+![Kibana1](images/kibana/1.png)
+
+Go to discover in the top left hand corner.
+
+![Kibana2](images/kibana/2.png)
+
+Create an index pattern for `logstash-*`. And click `> Next step`
+
+![Kibana3](images/kibana/3.png)
+
+Select `@timestamp` as a time filter field name. And then click
+`Create index pattern`.
+
+![Kibana4](images/kibana/4.png)
+
+Go back to the discover tab.
+
+![Kibana5](images/kibana/5.png)
+
+The logs will be available to interact using your new filter.
+
+![Kibana6](images/kibana/6.png)
+
 # Requirements
 
 In order to demonstrate the a9s Data Services product , we need the following
