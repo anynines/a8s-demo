@@ -413,9 +413,133 @@ The logs will be available to interact using your new filter.
 
 ![Kibana6](images/kibana/6.png)
 
+## Metrics
+
+Kubernetes provides out-of-the-box already control plane and container metrics
+in prometheus format. These metrics can be scraped at the /metrics endpoint at
+the Kubernetes API Server.
+
+In order to scrape these logs we will deploy a Prometheus instance that is used
+to scrape the system metrics and store them in the internal database.
+Furthermore, we are going to deploy a Grafana dashboard which is able to query
+the Prometheus database and visualize the metrics in a metrics dashboard.
+
+### Prometheus
+
+In the following, we will deploy and use Prometheus to scrape and store the
+metrics on minikube.
+
+#### Creation
+
+First we need to install the Prometheus deployment.
+We need to give Prometheus certain permissions to access the /metrics endpoint.
+These permissions are defined in the `prometheus-permissions.yaml` file.
+Moreover, we configure the Prometheus instance with the
+`prometheus-configmap.yaml` file that defines the endpoints that will be
+scraped as well as the corresponding scrape interval. The prometheus service
+that is defined in the `prometheus-service.yaml` is used by the Grafana
+dashboard.
+
+```shell
+kubectl apply -f deployment/prometheus-permissions.yaml
+kubectl apply -f deployment/prometheus-configmap.yaml
+kubectl apply -f deployment/prometheus-deployment.yaml
+kubectl apply -f deployment/prometheus-service.yaml
+```
+
+The `a8s-system` namespace should now list pods prefixed with the name
+`Prometheus`.
+
+```shell
+kubectl get pods -n a8s-system
+```
+
+```
+NAME                                                  READY   STATUS    RESTARTS   AGE
+a8s-backup-controller-manager-6d6946896d-9gb8g        2/2     Running   0          7d21h
+prometheus-deployment-87cc8fb88-fvg48                 1/1     Running   0          54s
+service-binding-controller-manager-594d7fbf68-s6jr4   2/2     Running   1          7d21h
+```
+
+### Grafana
+
+In the following, we are going to deploy a Grafana dashboard that will query the
+system metrics that are scraped by Prometheus and display them in a metrics
+dashboard.
+
+### Creation
+
+Just as for the Prometheus instance, we will deploy the Grafana dashboard in the
+`a8s-system` namespace. In case it doesn't exist yet it can be created using
+the following command:
+
+```shell
+kubectl apply -f dashboard/a8s-system.yaml
+```
+
+First we need to deploy the Grafana dashboard.
+
+```shell
+kubectl apply -f deployment/grafana-configmap.yaml
+kubectl apply -f deployment/grafana-deployment.yaml
+kubectl apply -f deployment/grafana-service.yaml
+```
+
+It is configured in a way to periodically send queries to the Prometheus
+service. By default Grafana does not come with any default dashboard. If we
+want to use one we either need to define it ourselves or we can import an
+existing one from the [Grafana Dashboards][https://grafana.com/grafana/dashboards]
+page using the Dashboard ID. In order to access the Grafana dashboard we need a
+port-forward:
+
+```shell
+kubectl port-forward -n a8s-system service/grafana 3000 &
+```
+
+Now the Grafana dashboard can be accessed using:
+
+```shell
+open http://localhost:3000
+```
+
+The default login credentials are `admin` for both username and password.
+
+#### Using Dashboard
+
+After Grafana has been deployed we need to import a dashboard in order to
+visualize the Kubernetes system metrics that are scraped by the Prometheus
+instance.
+
+![Grafana1](images/grafana/1.png)
+
+Go to the Dashboards section in the left menu.
+
+![Grafana2](images/grafana/2.png)
+
+Then go to the Manage page.
+
+![Grafana3](images/grafana/3.png)
+
+Click on Import on the right hand side.
+
+![Grafana4](images/grafana/4.png)
+ 
+Then Insert `8588` as the Dashboard ID and click on Load.
+
+![Grafana5](images/grafana/5.png)
+
+Choose Prometheus as the data source.
+
+![Grafana6](images/grafana/6.png)
+
+Now the imported metrics dashboard should visualize some of the metrics
+that are scraped by the Prometheus instance. In case we want to show metrics
+of the Kubernetes API server we can use the pre-build metrics dashboard with
+the ID `12006`.
+
 # Requirements
 
-In order to demonstrate the a9s Data Services product , we need the following
+In order to demonstrate the a9s Data Services product, we need the following
 things:
 - Kubernetes to demonstrate the product on
 - this repo that contains some yaml manifests
