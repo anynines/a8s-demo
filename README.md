@@ -62,7 +62,7 @@ Insert AWS access credentials into the following files:
 **WATCH OUT** to not commit those files.
 
 ```shell
-kubectl create secret generic aws-credentials \
+kubectl create secret generic a8s-backup-cloud-credentials -n a8s-system \
       --from-file=./access-key-id \
         --from-file=./secret-access-key
 ```

@@ -404,7 +404,7 @@ data:
       cloud_configuration:
         provider: "AWS"
         container: "a8s-postgresql"
-        secret_name: "aws-credentials"
+        secret_name: "a8s-backup-cloud-credentials"
         region: "eu-central-1"
       encryption:
         password: "password"
@@ -462,7 +462,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: c4aeb71c-dd2a-4e6e-9385-1c3bb839307c.de.a9s.eu/demo/a8s-backup-manager:v0.2.0
+        image: c4aeb71c-dd2a-4e6e-9385-1c3bb839307c.de.a9s.eu/a8s/a8s-backup-manager:0.4.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -470,6 +470,11 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 20
         name: manager
+        env:
+        - name: systemNamespace
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         readinessProbe:
           httpGet:
             path: /readyz
