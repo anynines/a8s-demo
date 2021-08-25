@@ -1,7 +1,8 @@
 # a8s Demo
 
-This repo is **WIP**.
-The goal is to provide instructions to demo the new a8s product in the future.
+> :warning: **this repo is deprecated**. You should NOT use it. We are no longer maintaining it in
+any way and the instructions in it likely no longer work. If you want up-to-date instructions
+go to [a8s-deployment][a8s-deployment].
 
 # IMPORTANT
 
@@ -635,3 +636,5 @@ docker push ${REGISTRY}/${PROJECT}/backup-agent:${VERSION}
 - [ ] master switchover
 - [ ] setup a demo user on a9s PaaS? -> sales engineer
 - [ ] step that describes 1password credentials for org/space on a9s PaaS
+
+[a8s-deployment]: https://github.com/anynines/a8s-deployment
