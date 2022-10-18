@@ -1,3 +1,5 @@
 kube.config.*
 access-key-id
 secret-access-key
+encryption-password
+backup-store-config.yaml

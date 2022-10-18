@@ -1,0 +1,3 @@
+resources:
+- demo-app-deployment.yaml
+- demo-app-service.yaml

@@ -40,6 +40,6 @@ spec:
             - name: "POSTGRESQL_PORT"
               value: "5432"
             - name: "POSTGRESQL_DATABASE"
-              value: "demo"
+              value: "a9s_apps_default_db"
             - name: "POSTGRESQL_SSLMODE"
               value: "require"
