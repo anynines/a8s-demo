@@ -1,0 +1,3 @@
+[submodule "a8s-deployment"]
+	path = a8s-deployment
+	url = https://github.com/anynines/a8s-deployment
