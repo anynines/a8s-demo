@@ -21,8 +21,22 @@ echo <encryption password> > a8s-deployment/deploy/a8s/backup-config/encryption-
 cp a8s-deployment/deploy/a8s/backup-config/backup-store-config.yaml.template a8s-deployment/deploy/a8s/backup-config/backup-store-config.yaml 
 ```
 
+The last file from the previous command contains the cloud provider, name and region of the bucket
+where the backups will be stored. It looks like:
+
+```yaml
+config:
+  cloud_configuration:
+    provider: "AWS"
+    container: a8s-shared-backups
+    region: eu-central-1
+```
+
+You'll need to set the values of the three fields to match the bucket ("container" in the file)
+where you want the backups to be stored.
+
 If we want to install the a8s data services framework using the Operator Lifecycle Manager (OLM)
-we need to ensure that the `operator-sdk` binary is present on our machine. If this is not the
+we also need to ensure that the `operator-sdk` binary is present on our machine. If this is not the
 case follow the [official OLM installation instructions][OLM installation] to install the
 operator-sdk binary.
 
