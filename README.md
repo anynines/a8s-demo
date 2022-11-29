@@ -78,13 +78,13 @@ cert-manager-cainjector-6586bddc69-68mz2   1/1     Running   0          22s
 cert-manager-webhook-6fc8f4666b-jwp5t      1/1     Running   0          22s
 ```
 
-Next we want to install the a8s data services framework by running the following commands:
+Next we want to install the a8s data services framework by running the following command:
 
 ```shell
 kubectl apply --kustomize a8s-deployment/deploy/a8s/manifests
 ```
 
-This will create a new namespace `a8s-system` and deploy all the required resources
+This will create a new namespace `a8s-system` and deploy all the required resources.
 
 Now we can run the following command to get all pods from the a8s-system namespace.
 
@@ -174,7 +174,7 @@ subscription.operators.coreos.com/a8s-postgresql created
 subscription.operators.coreos.com/a8s-service-binding-controller created
 ```
 
-Sou should validate that the a8s data services framework is indeed up and running by executing:
+Validate that the a8s data services framework is indeed up and running by executing:
 
 ```shell
 watch kubectl get pods --namespace a8s-system
@@ -209,6 +209,8 @@ execute the following command and show that manifest:
 cat a8s-deployment/examples/postgresql-instance.yaml
 ```
 
+Then, we can apply the manifest to create the instance:
+
 ```shell
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
@@ -228,7 +230,7 @@ watch kubectl get postgresql sample-pg-cluster --output template='{{.status}}'
 ```
 
 We should wait until the number of ready replicas matches the number of replicas specified in
-the PostgreSQL Custom Resource we applied.
+the spec of the PostgreSQL Custom Resource we applied.
 
 ```shell
 # Output of the watch command shown above
@@ -246,6 +248,8 @@ they are cached on the Kubernetes node and subsequent instance creations will be
 Next we want to deploy a PostgreSQL demo app (`a9s-postgresql-app`) that will
 use the new PostgreSQL instance to store data.
 
+Show its manifest via this command:
+
 ```shell
 cat demo-app/demo-app-deployment.yaml
 ```
@@ -253,15 +257,19 @@ cat demo-app/demo-app-deployment.yaml
 First, we need to create a service binding resource that will configure a user for the demo app in
 the PostgreSQL database and store the credentials for that user in a Kubernetes API secret.
 
+Show its manifest first:
+
 ```shell
 cat a8s-deployment/examples/service-binding.yaml
 ```
+
+Then, apply:
 
 ```shell
 kubectl apply --filename a8s-deployment/examples/service-binding.yaml
 ```
 
-We can check on the status of the service binding by using :
+We can check on the status of the service binding by using:
 
 ```shell
 watch kubectl get servicebinding sb-sample --output template='{{.status.implemented}}'
@@ -334,8 +342,6 @@ demo-app-796d8f6f86-v5xsf   0/1     ContainerCreating   0          12s
 demo-app-796d8f6f86-v5xsf   1/1     Running             0          43s
 ```
 
-Expose the demo application to the outside world by opening a port-forward.
-
 If we want to use a port-forward to access the demo applications dashboard, execute the following
 command:
 
@@ -353,11 +359,15 @@ to open the dashboard.
 
 Create a new blog post entry by clicking on the "Create Post" button in the top right corner.
 
-Next we'll create a backup of the current state of the database with our single blog post:
+Next we'll create a backup of the current state of the database with our single blog post.
+
+Shot the manifest first:
 
 ```shell
 cat a8s-deployment/examples/backup.yaml
 ```
+
+Then apply it:
 
 ```shell
 kubectl apply --filename a8s-deployment/examples/backup.yaml
@@ -376,11 +386,15 @@ backup.backups.anynines.com/backup-sample condition met
 ```
 
 To test the restore functionality, we'll first create another blog entry and then restore to the
-latest backup.
+latest backup (which doesn't have the newly added entry).
+
+Show the manifest first:
 
 ```shell
 cat a8s-deployment/examples/restore.yaml
 ```
+
+Then apply it:
 
 ```shell
 kubectl apply --filename a8s-deployment/examples/restore.yaml
@@ -623,7 +637,7 @@ watch kubectl get postgresql sample-pg-cluster --output template='{{.status}}'
 ```
 
 As soon as the PostgreSQL instance is ready (the number of ready replicas matches the number of
-ready replicas) we can get the list (and number) of available PostgreSQL extensions by executing:
+desired replicas) we can get the list (and number) of available PostgreSQL extensions by executing:
 
 ```shell
 kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
