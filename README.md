@@ -420,7 +420,7 @@ application and we should see that the second blog post entry we previously crea
 We can delete an existing PostgreSQL instance by executing:
 
 ```shell
-k delete --filename a8s-deployment/examples/postgresql-instance.yaml
+kubectl delete --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
 Deletion is performed by scaling down the number of PostgreSQL replicas to 0. In order to show
