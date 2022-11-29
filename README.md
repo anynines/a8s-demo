@@ -627,9 +627,6 @@ ready replicas) we can get the list (and number) of available PostgreSQL extensi
 
 ```shell
 kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
-
-# TODO: Compile a complete demo of PostgreSQL extensions that contains actual usage of the installed
-# extension(s).
 ```
 
 which should result in:
@@ -985,6 +982,8 @@ The images for the demo are currently stored on a publicly available AWS ECR reg
 - [ ] Actual usage of PostgreSQL extensions
 - [ ] Add custom Grafana dashboard for our metrics
 - [ ] Improve Master Failover by introduction ChaosMesh
+- [ ] Compile a complete demo of PostgreSQL extensions that contains actual usage of the installed
+      extension(s).
 
 [statefulSet]: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
 [deployment]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
