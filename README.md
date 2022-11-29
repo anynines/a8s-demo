@@ -228,7 +228,7 @@ watch kubectl get postgresql sample-pg-cluster --output template='{{.status}}'
 ```
 
 We should wait until the number of ready replicas matches the number of replicas specified in
-the PostgreSQL Custom Resource we applied. 
+the PostgreSQL Custom Resource we applied.
 
 ```shell
 # Output of the watch command shown above
@@ -606,8 +606,8 @@ instance as well as adding extensions to an existing one. It is worth mentioning
 PostgreSQL extensions is done via init-containers which means that when updating the list of
 extensions on an existing PostgreSQL instance a rolling update is triggered.
 
-To showcase the extension management capabilities of the PostgreSQL Operator, we first 
-create an instance without any extensions, check the total number of available extensions, 
+To showcase the extension management capabilities of the PostgreSQL Operator, we first
+create an instance without any extensions, check the total number of available extensions,
 update the instance manifest and then check again the total number of available extensions.
 
 We will start by creating a new instance without any extensions installed:
@@ -622,7 +622,7 @@ and wait until all replicas are ready:
 watch kubectl get postgresql sample-pg-cluster --output template='{{.status}}'
 ```
 
-As soon as the PostgreSQL instance is ready (the number of ready replicas matches the number of 
+As soon as the PostgreSQL instance is ready (the number of ready replicas matches the number of
 ready replicas) we can get the list (and number) of available PostgreSQL extensions by executing:
 
 ```shell
@@ -917,7 +917,7 @@ dashboard.
 It is configured in a way to periodically send queries to the Prometheus
 service. By default, Grafana does not come with any dashboards. If we
 want to use one we either need to define it ourselves or we can import an
-existing one from the [Grafana Dashboards][https://grafana.com/grafana/dashboards]
+existing one from the [Grafana Dashboards](https://grafana.com/grafana/dashboards)
 page using the Dashboard ID.
 
 #### Using Grafana Dashboard
@@ -956,7 +956,7 @@ Then Insert `8588` as the Dashboard ID and click on Load.
 
 ![Grafana4](images/grafana/4.png)
 
-Choose Prometheus as the data source. 
+Choose Prometheus as the data source.
 
 ![Grafana5](images/grafana/5.png)
 
@@ -968,16 +968,17 @@ that are scraped by the Prometheus instance.
 In case we want to show metrics of the Kubernetes API server we can use the pre build metrics
 dashboard with the ID `12006`.
 
-# Requirements
+## Requirements
 
 In order to demonstrate the a8s data services framework, we need the following
 things:
+
 - Kubernetes to demonstrate the product on (best would be a cluster with 3-5 nodes)
 - this repo that contains some yaml manifests
 
 The images for the demo are currently stored on a publicly available AWS ECR registry,
 
-# TODOs
+## TODOs
 
 - [ ] Get sales engineer involved
 - [ ] What is the future product name?
@@ -985,7 +986,6 @@ The images for the demo are currently stored on a publicly available AWS ECR reg
 - [ ] Add custom Grafana dashboard for our metrics
 - [ ] Improve Master Failover by introduction ChaosMesh
 
-[a8s-deployment]: https://github.com/anynines/a8s-deployment
 [statefulSet]: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
 [deployment]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
 [OLM installation]: https://sdk.operatorframework.io/docs/installation/
