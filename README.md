@@ -1,6 +1,4 @@
-# a8s Demo
-
-# Demo Script
+# a8s Demo Script
 
 ## Prerequisites
 
