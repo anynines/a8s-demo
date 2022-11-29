@@ -177,21 +177,17 @@ subscription.operators.coreos.com/a8s-service-binding-controller created
 Validate that the a8s data services framework is indeed up and running by executing:
 
 ```shell
-watch kubectl get pods --namespace a8s-system
+watch kubectl get pods --namespace a8s-system --selector app.kubernetes.io/component=controller-manager
 ```
 
 which should result in an output similar to:
 
 ```shell
-Every 2,0s: kubectl get pods --namespace a8s-system
+Every 2,0s: kubectl get pods --namespace a8s-system --selector app.kubernetes.io/component=controller-manager
 
 NAME                                                              READY   STATUS      RESTARTS   AGE
-8ef9d6a74174cd9664a8a0bdb91b9c991fd713f469b5fc6658d7f720cfsgqlw   0/1     Completed   0          102s
 a8s-backup-controller-manager-5c57596f76-7gdcs                    2/2     Running     0          76s
-a8s-catalog-gsv7x                                                 1/1     Running     0          2m28s
-aacb381f93e45e9198287c063e664db8ed96d7daa2fd18ba4c32b6926b8vwrp   0/1     Completed   0          102s
-c5a1cc8d0df8f0213ced974b8508821ddc1fd7d20cccc4c9dcdacaa16f2xtkh   0/1     Completed   0          102s
-pstgresql-controller-manager-5dcd6cbbfd-tprxj                     2/2     Running     0          73s
+postgresql-controller-manager-5dcd6cbbfd-tprxj                    2/2     Running     0          73s
 service-binding-controller-manager-6948fbd679-mcdbx               2/2     Running     0          71s
 ```
 
