@@ -60,12 +60,10 @@ The following command will install the cert-manager and wait for the cert-manage
 initialized.
 
 ```shell
-# Deploy the cert-manager using kustomize
 kubectl apply --kustomize a8s-deployment/deploy/cert-manager
 ```
 
 ```shell
-# Watch the cert-manager Pods to become ready
 watch kubectl get pods --namespace cert-manager
 ```
 
@@ -91,7 +89,6 @@ This will create a new namespace `a8s-system` and deploy all the required resour
 Now we can run the following command to get all pods from the a8s-system namespace.
 
 ```shell
-# Check that the components of the a8s framework have been successfully installed
 watch kubectl get pods --namespace a8s-system
 ```
 
@@ -114,7 +111,6 @@ In order to install the a8s data services framework using the OLM we need to ins
 components in our cluster. We can do this by executing
 
 ```shell
-# Install the OLM components
 operator-sdk olm install
 ```
 
@@ -162,7 +158,6 @@ create:
 Execute the following command to install the a8s data services framework using the OLM:
 
 ```shell
-# Deploy the a8s data services framework using OLM
 kubectl apply --kustomize a8s-deployment/deploy/a8s/olm
 ```
 
@@ -211,12 +206,10 @@ If we want to create a new PostgreSQL instance we can simply apply a manifest. W
 execute the following command and show that manifest:
 
 ```shell
-# Show the postgresql manifest and explain it
 cat a8s-deployment/examples/postgresql-instance.yaml
 ```
 
 ```shell
-# Apply the postgresql manifest to create the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -254,7 +247,6 @@ Next we want to deploy a PostgreSQL demo app (`a9s-postgresql-app`) that will
 use the new PostgreSQL instance to store data.
 
 ```shell
-# Show the demo app manifest and briefly explain it
 cat demo-app/demo-app-deployment.yaml
 ```
 
@@ -262,19 +254,16 @@ First, we need to create a service binding resource that will configure a user f
 the PostgreSQL database and store the credentials for that user in a Kubernetes API secret.
 
 ```shell
- # show the service binding manifest and explain it
 cat a8s-deployment/examples/service-binding.yaml
 ```
 
 ```shell
-# create the service binding manifest
 kubectl apply --filename a8s-deployment/examples/service-binding.yaml
 ```
 
 We can check on the status of the service binding by using :
 
 ```shell
-# check whether the service binding has been successfully created
 watch kubectl get servicebinding sb-sample --output template='{{.status.implemented}}'
 ```
 
@@ -294,7 +283,6 @@ PostgreSQL user that has been created. This secret is named by the `metadata.nam
 actually use the service binding user. We can fetch the secret by executing:
 
 ```shell
-# Get the service binding secret and print it in yaml format
 kubectl get secret sb-sample-service-binding -o yaml
 ```
 
@@ -368,12 +356,10 @@ Create a new blog post entry by clicking on the "Create Post" button in the top 
 Next we'll create a backup of the current state of the database with our single blog post:
 
 ```shell
-# Show the backup manifest and briefly explain it
 cat a8s-deployment/examples/backup.yaml
 ```
 
 ```shell
-# Apply the manifest to trigger the backup of the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/backup.yaml
 ```
 
@@ -393,12 +379,10 @@ To test the restore functionality, we'll first create another blog entry and the
 latest backup.
 
 ```shell
-# Show the restore manifest and briefly explain it
 cat a8s-deployment/examples/restore.yaml
 ```
 
 ```shell
-# Apply the manifest to trigger the restore of the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/restore.yaml
 ```
 
@@ -426,7 +410,6 @@ application and we should see that the second blog post entry we previously crea
 We can delete an existing PostgreSQL instance by executing:
 
 ```shell
-# Delete the manifest of the PostgreSQL instance
 k delete --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -445,7 +428,6 @@ To demonstrate the automated failover capabilities of our PostgreSQL instances, 
 create a PostgreSQL instance by executing
 
 ```shell
-# Apply the postgresql manifest to create the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -459,7 +441,6 @@ As soon as all of our 3 replicas become ready we can proceed by
 checking which of our pods is currently the replication leader:
 
 ```shell
-# Watch the Pods with the master label
 watch kubectl get pods -l a8s.a9s/replication-role=master
 ```
 
@@ -479,7 +460,6 @@ tmux) so that we can see the output of the watch command from above as well as t
 will execute.
 
 ```shell
-# Exec into the patroni container and use the patronictl binary ot force a failover
 kubectl exec -it sample-pg-cluster-0 -c postgres -- /usr/local/bin/patronictl failover
 ```
 
@@ -541,7 +521,6 @@ that instance and then show that the new configuration parameters have been appl
 First we want to create an instance by executing:
 
 ```shell
-# Apply the postgresql manifest to create the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -634,7 +613,6 @@ update the instance manifest and then check again the total number of available 
 We will start by creating a new instance without any extensions installed:
 
 ```shell
-# Apply the postgresql manifest to create the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -648,7 +626,6 @@ As soon as the PostgreSQL instance is ready (the number of ready replicas matche
 ready replicas) we can get the list (and number) of available PostgreSQL extensions by executing:
 
 ```shell
-# Execute a query against the PostgreSQL database to get the list of available extensions
 kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
 
 # TODO: Compile a complete demo of PostgreSQL extensions that contains actual usage of the installed
@@ -779,7 +756,6 @@ well as on most Kubernetes clusters on cloud infrastructure. A fix is described 
 In order to deploy the logging stack execute the following command:
 
 ```shell
-# Apply the logging components using kustomize
 kubectl apply --kustomize a8s-deployment/deploy/logging
 ```
 
@@ -807,7 +783,6 @@ daemonset.apps/fluent-bit created
 Afterwards we will have to wait until the logging stack is up and running:
 
 ```shell
-# Wait for the Pods to be up and running
 watch kubectl get pod --namespace a8s-system --selector=a8s.anynines/logging
 ```
 
@@ -912,7 +887,6 @@ that is defined in the `prometheus-service.yaml` is used by the Grafana
 dashboard.
 
 ```shell
-# Deploy the metrics stack using static yaml files
 kubectl apply --recursive -f a8s-deployment/deploy/metrics/
 ```
 
@@ -921,7 +895,6 @@ The `a8s-system` namespace should now list pods prefixed with the name
 stack are up and running. We can check this by executing
 
 ```shell
-# Wait for the Pods to be up and running
 watch kubectl get pod --namespace a8s-system --selector=a8s.anynines/metrics
 ```
 
