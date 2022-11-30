@@ -327,14 +327,13 @@ kubectl apply --kustomize demo-app/
 Executing:
 
 ```shell
-kubectl get pods --selector app=demo-app --watch
+watch kubectl get pods --selector app=demo-app
 ```
 
 should result in something like:
 
 ```shell
 NAME                        READY   STATUS              RESTARTS   AGE
-demo-app-796d8f6f86-v5xsf   0/1     ContainerCreating   0          12s
 demo-app-796d8f6f86-v5xsf   1/1     Running             0          43s
 ```
 
