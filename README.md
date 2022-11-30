@@ -475,7 +475,7 @@ kubectl exec --stdin --tty sample-pg-cluster-0 --container postgres -- /usr/loca
 which should result in:
 
 ```shell
-Candidate ['sample-pg-cluster-0', 'sample-pg-cluster-2'] []:
+Candidate ['sample-pg-cluster-1', 'sample-pg-cluster-2'] []:
 ```
 
 Now we have to enter one of the standbys listed in the returned array (it doesn't matter which
@@ -483,7 +483,7 @@ one we choose).
 
 ```shell
 # Enter one of the replicas listed in the returned prompt from patronictl
-Candidate ['sample-pg-cluster-0', 'sample-pg-cluster-2'] []: sample-pg-cluster-2
+Candidate ['sample-pg-cluster-1', 'sample-pg-cluster-2'] []: sample-pg-cluster-2
 ```
 
 which should give us an output similar to
@@ -493,23 +493,23 @@ Current cluster topology
 + Cluster: sample-pg-cluster (7155482187446120565) -----+----+-----------+
 | Member              | Host        | Role    | State   | TL | Lag in MB |
 +---------------------+-------------+---------+---------+----+-----------+
-| sample-pg-cluster-0 | 10.244.3.19 | Replica | running |  6 |         0 |
-| sample-pg-cluster-1 | 10.244.2.17 | Replica | running |  6 |         0 |
-| sample-pg-cluster-2 | 10.244.1.24 | Leader  | running |  6 |           |
+| sample-pg-cluster-0 | 10.244.3.19 | Leader  | running |  1 |           |
+| sample-pg-cluster-1 | 10.244.2.17 | Replica | running |  1 |         0 |
+| sample-pg-cluster-2 | 10.244.1.24 | Replica | running |  1 |         0 |
 +---------------------+-------------+---------+---------+----+-----------+
-Are you sure you want to failover cluster sample-pg-cluster, demoting current master sample-pg-cluster-2? [y/N]:
+Are you sure you want to failover cluster sample-pg-cluster, demoting current master sample-pg-cluster-0? [y/N]:
 ```
 
 Now we need to enter `y` in order to approve the failover. We should get something similar to
 
 ```shell
-2022-10-18 07:37:26.90871 Successfully failed over to "sample-pg-cluster-1"
+2022-10-18 07:37:26.90871 Successfully failed over to "sample-pg-cluster-2"
 + Cluster: sample-pg-cluster (7155482187446120565) -----+----+-----------+
 | Member              | Host        | Role    | State   | TL | Lag in MB |
 +---------------------+-------------+---------+---------+----+-----------+
-| sample-pg-cluster-0 | 10.244.3.19 | Replica | running |  6 |         0 |
-| sample-pg-cluster-1 | 10.244.2.17 | Leader  | running |  6 |           |
-| sample-pg-cluster-2 | 10.244.1.24 | Replica | stopped |    |   unknown |
+| sample-pg-cluster-0 | 10.244.3.19 | Replica | stopped |    |   unknown |
+| sample-pg-cluster-1 | 10.244.2.17 | Replica | running |  1 |         0 |
+| sample-pg-cluster-2 | 10.244.1.24 | Leader  | running |  1 |           |
 +---------------------+-------------+---------+---------+----+-----------+
 ```
 
