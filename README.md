@@ -451,13 +451,13 @@ As soon as all of our 3 replicas become ready we can proceed by
 checking which of our pods is currently the replication leader:
 
 ```shell
-watch kubectl get pods -l a8s.a9s/replication-role=master
+watch kubectl get pods --selector a8s.a9s/replication-role=master
 ```
 
 which should give an output similar to
 
 ```shell
-Every 2,0s: kubectl get pods -l a8s.a9s/replication-role=master
+Every 2,0s: kubectl get pods --selector a8s.a9s/replication-role=master
 
 NAME                  READY   STATUS    RESTARTS   AGE
 sample-pg-cluster-0   3/3     Running   0          19m
@@ -470,7 +470,7 @@ tmux) so that we can see the output of the watch command from above as well as t
 will execute.
 
 ```shell
-kubectl exec -it sample-pg-cluster-0 -c postgres -- /usr/local/bin/patronictl failover
+kubectl exec --stdin --tty sample-pg-cluster-0 --container postgres -- /usr/local/bin/patronictl failover
 ```
 
 which should result in:
@@ -587,7 +587,7 @@ spec:
 and re-apply the manifest:
 
 ```shell
-kubectl apply -f a8s-deployment/examples/postgresql-instance.yaml
+kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
 now we can again execute
@@ -636,7 +636,7 @@ As soon as the PostgreSQL instance is ready (the number of ready replicas matche
 desired replicas) we can get the list (and number) of available PostgreSQL extensions by executing:
 
 ```shell
-kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
+kubectl exec sample-pg-cluster-0 --container postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
 ```
 
 which should result in:
@@ -703,7 +703,7 @@ kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 to update the existing PostgreSQL instance. By re-running
 
 ```shell
-kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
+kubectl exec sample-pg-cluster-0 --container postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
 ```
 
 we should get
@@ -734,7 +734,7 @@ as a result which indicates that the two desired extensions are indeed installed
 actually use those extensions we need to load them by running
 
 ```shell
-kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c 'CREATE EXTENSION "pg_qualstats";'
+kubectl exec sample-pg-cluster-0 --container postgres -- psql -U postgres -d a9s_apps_default_db -c 'CREATE EXTENSION "pg_qualstats";'
 ```
 
 which should result in
@@ -894,7 +894,7 @@ that is defined in the `prometheus-service.yaml` is used by the Grafana
 dashboard.
 
 ```shell
-kubectl apply --recursive -f a8s-deployment/deploy/metrics/
+kubectl apply --recursive --filename a8s-deployment/deploy/metrics/
 ```
 
 The `a8s-system` namespace should now list pods prefixed with the name
@@ -933,7 +933,7 @@ After Grafana has been deployed we want to access the Grafana dashboard, so we n
 to the Grafana service:
 
 ```shell
-kubectl port-forward -n a8s-system service/grafana 3000 &
+kubectl port-forward --namespace a8s-system service/grafana 3000 &
 ```
 
 Now the Grafana dashboard can be accessed using:
