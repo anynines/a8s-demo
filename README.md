@@ -747,14 +747,29 @@ which means that the extensions has been successfully loaded.
 
 ## Logging
 
-### Deploy OpenSearch, OpenSearch Dashboard, FluentD and FluentBit
+With a8s, we provide optional YAML manifests that deploy on the Kubernets cluster a logging stack to
+collect, store and analyze the logs of your data service instances and other pods running in the
+cluster.
 
-OpenSearch is the distributed, RESTful search and analytics engine which we
-use to store, search and manage our cluster's logs. The OpenSearch pods
-are deployed as a part of a [StatefulSet][statefulset] since they require
-persistent storage for the logs. This also allows us to span the pods over
-multiple availability zones for high availability in order to limit possible
-downtime.
+The logging stack is based on three technologies:
+
+- [OpenSearch][opensearch]: a search and analytics engine to store and analyze logs.
+- [Fluentd][fluentd]: a centralized logs collector.
+- [FluentBit][fluentbit]: a lightweight logs processor and forwarder.
+
+More precisely, the logging stack comprises:
+
+- A FluentBit [DaemonSet][daemonset] that collects all the logs from the pods on every Kubernetes
+  node and forwards them to a Fluentd aggregator.
+- A [StatefulSet][statefulset] that runs a Fluentd singleton that aggregates all the logs in the
+  cluster.
+- A [StatefulSet][statefulset] that runs an OpenSearch singleton that stores all the logs (after
+  having received them from the Fluentd aggregator) and exposes endpoints to query and analyze the
+  logs.
+- A [Deployment][deployment] that runs an OpenSearch dashboard singleton, which exposes a web
+  dashboard to query and analyze the logs via a GUI.
+
+### Deploy OpenSearch, OpenSearch Dashboard, FluentD and FluentBit
 
 **Warning:** The default OpenSearch config CAN cause issues on Minikube with a VM based driver as
 well as on most Kubernetes clusters on cloud infrastructure. A fix is described [here](https://github.com/anynines/a8s-deployment/blob/develop/docs/platform-operators/installing_framework.md#virtual-memory-usage).
@@ -806,18 +821,6 @@ fluent-bit-2j4zc                            1/1     Running   0          13m
 fluent-bit-5g7vx                            1/1     Running   0          13m
 fluent-bit-gwxnc                            1/1     Running   0          13m
 ```
-
-OpenSearch dashboard provides a browser-based analytics and search dashboard. We deploy it as a
-Kubernetes [Deployment][deployment] since we don't require storage for OpenSearch dashboard.
-
-In order to see logs for the Kubernetes instance via OpenSearch and OpenSearch dashboard,
-we need to install a `DaemonSet` that will collect those logs from the
-Kubernetes nodes and forward them to an Elasticsearch instance in our cluster.
-
-A `DaemonSet` ensures that all (or some) Nodes run a copy of a Pod. The pod in
-our case will run `fluentd`. The `fluentd` tool will read the a9s Kubernetes
-logs from the disk and forward them via logstash format to the Elasticsearch
-instance.
 
 ### Using OpenSearch Dashboard
 
@@ -996,4 +999,8 @@ The images for the demo are currently stored on a publicly available AWS ECR reg
 
 [statefulSet]: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
 [deployment]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+[daemonset]: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
 [OLM installation]: https://sdk.operatorframework.io/docs/installation/
+[fluentd]: https://www.fluentd.org/
+[fluentbit]: https://fluentbit.io/
+[opensearch]: https://opensearch.org/
