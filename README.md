@@ -836,36 +836,36 @@ Open the OpenSearch dashboard in Browser link in browser.
 open http://localhost:5601
 ```
 
-Now click in the middle of the screen on the blue "OpenSearch Dashboards Visualize and analyze"
-button.
-
 ![opensearch1](images/opensearch/1.png)
 
-Click on the blue "Add your data" button.
+Select `Add data` and then click on the ≡ icon in the top left hand corner. In the menu
+select `Stack management` in the `Management` section.
 
 ![opensearch2](images/opensearch/2.png)
 
-Click on the blue "Create index pattern" button.
+Select `Index Patterns`.
 
 ![opensearch3](images/opensearch/3.png)
 
-Create an index pattern for `logstash-*`. And click `> Next step`
+Click on `Create Index pattern`.
 
 ![opensearch4](images/opensearch/4.png)
 
-Select `@timestamp` as a time filter field name. And then click
-`Create index pattern`.
+Create an index pattern for `logstash-*`. And click `> Next step`
 
 ![opensearch5](images/opensearch/5.png)
 
-Now click in the top left corner on the three bars to open the side menu and
-click on "Discover".
+Select `@timestamp` as a time filter field name. And then click `Create index pattern`.
 
 ![opensearch6](images/opensearch/6.png)
 
-Now we should be able to see the logs of the instance.
+Go back to the discover tab.
 
 ![opensearch7](images/opensearch/7.png)
+
+The logs will be available to interact using your new filter.
+
+![opensearch8](images/opensearch/8.png)
 
 ## Metrics
 
