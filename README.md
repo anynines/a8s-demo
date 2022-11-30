@@ -2,6 +2,17 @@
 
 ## Prerequisites
 
+### git Submodule
+
+This repo uses the [a8s-deployment][a8s-deployment] repo as a submodule.
+
+To correctly initialize it, either clone this repo with the `--recurse-submodules` flag or invoke
+`git submodule update --init` after cloning.
+
+Otherwise, some of the commands shown in this file will fail (loudly and without side effects).
+
+### Backups Configuration
+
 Before installing the a8s framework we need to ensure that the relevant configuration files for
 the a8s-backup-manager are there. More precisely, we need to create individual files in the
 `a8s-deployment/deploy/a8s/backup-config` directory which are used to configure the external object
@@ -34,6 +45,8 @@ config:
 
 You'll need to set the values of the three fields to match the bucket ("container" in the file)
 where you want the backups to be stored.
+
+### Operator SDK
 
 If we want to install the a8s data services framework using the Operator Lifecycle Manager (OLM)
 we also need to ensure that the `operator-sdk` binary is present on our machine. If this is not the
@@ -1004,3 +1017,4 @@ The images for the demo are currently stored on a publicly available AWS ECR reg
 [fluentd]: https://www.fluentd.org/
 [fluentbit]: https://fluentbit.io/
 [opensearch]: https://opensearch.org/
+[a8s-deployment]: https://github.com/anynines/a8s-deployment
