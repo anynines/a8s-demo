@@ -369,7 +369,7 @@ Create a new blog post entry by clicking on the "Create Post" button in the top 
 
 Next we'll create a backup of the current state of the database with our single blog post.
 
-Shot the manifest first:
+Show the manifest first:
 
 ```shell
 cat a8s-deployment/examples/backup.yaml
