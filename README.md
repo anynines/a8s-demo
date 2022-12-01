@@ -346,8 +346,10 @@ watch kubectl get pods --selector app=demo-app
 should result in something like:
 
 ```shell
-NAME                        READY   STATUS              RESTARTS   AGE
-demo-app-796d8f6f86-v5xsf   1/1     Running             0          43s
+Every 2.0s: kubectl get pods --selector app=demo-app
+
+NAME                        READY   STATUS    RESTARTS   AGE
+demo-app-796d8f6f86-rtdtm   1/1     Running   0          24h
 ```
 
 If we want to use a port-forward to access the demo applications dashboard, execute the following
