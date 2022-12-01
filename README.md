@@ -11,7 +11,7 @@ To correctly initialize it, either clone this repo with the `--recurse-submodule
 
 Otherwise, some of the commands shown in this file will fail (loudly and without side effects).
 
-### Backups Configuration
+### Backups Store Configuration
 
 Before installing the a8s framework we need to ensure that the relevant configuration files for
 the a8s-backup-manager are there. More precisely, we need to create individual files in the
