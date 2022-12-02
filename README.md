@@ -53,6 +53,12 @@ we also need to ensure that the `operator-sdk` binary is present on our machine.
 case follow the [official OLM installation instructions][OLM installation] to install the
 operator-sdk binary.
 
+### watch Command
+
+Some steps in this demo use the [watch][watch] command. If you use Linux it's installed by
+default so you already have it. If you use macOS and don't have the `watch` command, follow
+[these instructions][watch installation] to install it.
+
 ## Installation
 
 There are two methods to install the a8s data services framework. One is by applying static yaml
@@ -1020,3 +1026,5 @@ The images for the demo are currently stored on a publicly available AWS ECR reg
 [fluentbit]: https://fluentbit.io/
 [opensearch]: https://opensearch.org/
 [a8s-deployment]: https://github.com/anynines/a8s-deployment
+[watch]: https://linux.die.net/man/1/watch
+[watch installation]: https://www.bollyinside.com/articles/install-watch-command-on-mac-os/
