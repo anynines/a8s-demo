@@ -1,8 +1,17 @@
-# a8s Demo
-
-# Demo Script
+# a8s Demo Script
 
 ## Prerequisites
+
+### git Submodule
+
+This repo uses the [a8s-deployment][a8s-deployment] repo as a submodule.
+
+To correctly initialize it, either clone this repo with the `--recurse-submodules` flag or invoke
+`git submodule update --init` after cloning.
+
+Otherwise, some of the commands shown in this file will fail (loudly and without side effects).
+
+### Backups Store Configuration
 
 Before installing the a8s framework we need to ensure that the relevant configuration files for
 the a8s-backup-manager are there. More precisely, we need to create individual files in the
@@ -23,10 +32,32 @@ echo <encryption password> > a8s-deployment/deploy/a8s/backup-config/encryption-
 cp a8s-deployment/deploy/a8s/backup-config/backup-store-config.yaml.template a8s-deployment/deploy/a8s/backup-config/backup-store-config.yaml 
 ```
 
+The last file from the previous command contains the cloud provider, name and region of the bucket
+where the backups will be stored. It looks like:
+
+```yaml
+config:
+  cloud_configuration:
+    provider: "AWS"
+    container: a8s-shared-backups
+    region: eu-central-1
+```
+
+You'll need to set the values of the three fields to match the bucket ("container" in the file)
+where you want the backups to be stored.
+
+### Operator SDK
+
 If we want to install the a8s data services framework using the Operator Lifecycle Manager (OLM)
-we need to ensure that the `operator-sdk` binary is present on our machine. If this is not the
+we also need to ensure that the `operator-sdk` binary is present on our machine. If this is not the
 case follow the [official OLM installation instructions][OLM installation] to install the
 operator-sdk binary.
+
+### watch Command
+
+Some steps in this demo use the [watch][watch] command. If you use Linux it's installed by
+default so you already have it. If you use macOS and don't have the `watch` command, follow
+[these instructions][watch installation] to install it.
 
 ## Installation
 
@@ -48,12 +79,10 @@ The following command will install the cert-manager and wait for the cert-manage
 initialized.
 
 ```shell
-# Deploy the cert-manager using kustomize
 kubectl apply --kustomize a8s-deployment/deploy/cert-manager
 ```
 
 ```shell
-# Watch the cert-manager Pods to become ready
 watch kubectl get pods --namespace cert-manager
 ```
 
@@ -68,18 +97,17 @@ cert-manager-cainjector-6586bddc69-68mz2   1/1     Running   0          22s
 cert-manager-webhook-6fc8f4666b-jwp5t      1/1     Running   0          22s
 ```
 
-Next we want to install the a8s data services framework by running the following commands:
+Next we want to install the a8s data services framework by running the following command:
 
 ```shell
 kubectl apply --kustomize a8s-deployment/deploy/a8s/manifests
 ```
 
-This will create a new namespace `a8s-system` and deploy all the required resources
+This will create a new namespace `a8s-system` and deploy all the required resources.
 
 Now we can run the following command to get all pods from the a8s-system namespace.
 
 ```shell
-# Check that the components of the a8s framework have been successfully installed
 watch kubectl get pods --namespace a8s-system
 ```
 
@@ -102,7 +130,6 @@ In order to install the a8s data services framework using the OLM we need to ins
 components in our cluster. We can do this by executing
 
 ```shell
-# Install the OLM components
 operator-sdk olm install
 ```
 
@@ -150,7 +177,6 @@ create:
 Execute the following command to install the a8s data services framework using the OLM:
 
 ```shell
-# Deploy the a8s data services framework using OLM
 kubectl apply --kustomize a8s-deployment/deploy/a8s/olm
 ```
 
@@ -167,7 +193,7 @@ subscription.operators.coreos.com/a8s-postgresql created
 subscription.operators.coreos.com/a8s-service-binding-controller created
 ```
 
-Sou should validate that the a8s data services framework is indeed up and running by executing:
+Validate that the a8s data services framework is indeed up and running by executing:
 
 ```shell
 watch kubectl get pods --namespace a8s-system
@@ -184,7 +210,7 @@ a8s-backup-controller-manager-5c57596f76-7gdcs                    2/2     Runnin
 a8s-catalog-gsv7x                                                 1/1     Running     0          2m28s
 aacb381f93e45e9198287c063e664db8ed96d7daa2fd18ba4c32b6926b8vwrp   0/1     Completed   0          102s
 c5a1cc8d0df8f0213ced974b8508821ddc1fd7d20cccc4c9dcdacaa16f2xtkh   0/1     Completed   0          102s
-pstgresql-controller-manager-5dcd6cbbfd-tprxj                     2/2     Running     0          73s
+postgresql-controller-manager-5dcd6cbbfd-tprxj                    2/2     Running     0          73s
 service-binding-controller-manager-6948fbd679-mcdbx               2/2     Running     0          71s
 ```
 
@@ -199,12 +225,12 @@ If we want to create a new PostgreSQL instance we can simply apply a manifest. W
 execute the following command and show that manifest:
 
 ```shell
-# Show the postgresql manifest and explain it
 cat a8s-deployment/examples/postgresql-instance.yaml
 ```
 
+Then, we can apply the manifest to create the instance:
+
 ```shell
-# Apply the postgresql manifest to create the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -223,7 +249,7 @@ watch kubectl get postgresql sample-pg-cluster --output template='{{.status}}'
 ```
 
 We should wait until the number of ready replicas matches the number of replicas specified in
-the PostgreSQL Custom Resource we applied. 
+the spec of the PostgreSQL Custom Resource we applied.
 
 ```shell
 # Output of the watch command shown above
@@ -241,28 +267,30 @@ they are cached on the Kubernetes node and subsequent instance creations will be
 Next we want to deploy a PostgreSQL demo app (`a9s-postgresql-app`) that will
 use the new PostgreSQL instance to store data.
 
+Show its manifest via this command:
+
 ```shell
-# Show the demo app manifest and briefly explain it
 cat demo-app/demo-app-deployment.yaml
 ```
 
 First, we need to create a service binding resource that will configure a user for the demo app in
 the PostgreSQL database and store the credentials for that user in a Kubernetes API secret.
 
+Show its manifest first:
+
 ```shell
- # show the service binding manifest and explain it
 cat a8s-deployment/examples/service-binding.yaml
 ```
 
+Then, apply:
+
 ```shell
-# create the service binding manifest
 kubectl apply --filename a8s-deployment/examples/service-binding.yaml
 ```
 
-We can check on the status of the service binding by using :
+We can check on the status of the service binding by using:
 
 ```shell
-# check whether the service binding has been successfully created
 watch kubectl get servicebinding sb-sample --output template='{{.status.implemented}}'
 ```
 
@@ -282,7 +310,6 @@ PostgreSQL user that has been created. This secret is named by the `metadata.nam
 actually use the service binding user. We can fetch the secret by executing:
 
 ```shell
-# Get the service binding secret and print it in yaml format
 kubectl get secret sb-sample-service-binding -o yaml
 ```
 
@@ -323,18 +350,17 @@ kubectl apply --kustomize demo-app/
 Executing:
 
 ```shell
-kubectl get pods --selector app=demo-app --watch
+watch kubectl get pods --selector app=demo-app
 ```
 
 should result in something like:
 
 ```shell
-NAME                        READY   STATUS              RESTARTS   AGE
-demo-app-796d8f6f86-v5xsf   0/1     ContainerCreating   0          12s
-demo-app-796d8f6f86-v5xsf   1/1     Running             0          43s
-```
+Every 2.0s: kubectl get pods --selector app=demo-app
 
-Expose the demo application to the outside world by opening a port-forward.
+NAME                        READY   STATUS    RESTARTS   AGE
+demo-app-796d8f6f86-rtdtm   1/1     Running   0          24h
+```
 
 If we want to use a port-forward to access the demo applications dashboard, execute the following
 command:
@@ -353,15 +379,17 @@ to open the dashboard.
 
 Create a new blog post entry by clicking on the "Create Post" button in the top right corner.
 
-Next we'll create a backup of the current state of the database with our single blog post:
+Next we'll create a backup of the current state of the database with our single blog post.
+
+Show the manifest first:
 
 ```shell
-# Show the backup manifest and briefly explain it
 cat a8s-deployment/examples/backup.yaml
 ```
 
+Then apply it:
+
 ```shell
-# Apply the manifest to trigger the backup of the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/backup.yaml
 ```
 
@@ -378,15 +406,17 @@ backup.backups.anynines.com/backup-sample condition met
 ```
 
 To test the restore functionality, we'll first create another blog entry and then restore to the
-latest backup.
+latest backup (which doesn't have the newly added entry).
+
+Show the manifest first:
 
 ```shell
-# Show the restore manifest and briefly explain it
 cat a8s-deployment/examples/restore.yaml
 ```
 
+Then apply it:
+
 ```shell
-# Apply the manifest to trigger the restore of the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/restore.yaml
 ```
 
@@ -414,8 +444,7 @@ application and we should see that the second blog post entry we previously crea
 We can delete an existing PostgreSQL instance by executing:
 
 ```shell
-# Delete the manifest of the PostgreSQL instance
-k delete --filename a8s-deployment/examples/postgresql-instance.yaml
+kubectl delete --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
 Deletion is performed by scaling down the number of PostgreSQL replicas to 0. In order to show
@@ -433,7 +462,6 @@ To demonstrate the automated failover capabilities of our PostgreSQL instances, 
 create a PostgreSQL instance by executing
 
 ```shell
-# Apply the postgresql manifest to create the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -447,14 +475,13 @@ As soon as all of our 3 replicas become ready we can proceed by
 checking which of our pods is currently the replication leader:
 
 ```shell
-# Watch the Pods with the master label
-watch kubectl get pods -l a8s.a9s/replication-role=master
+watch kubectl get pods --selector a8s.a9s/replication-role=master
 ```
 
 which should give an output similar to
 
 ```shell
-Every 2,0s: kubectl get pods -l a8s.a9s/replication-role=master
+Every 2,0s: kubectl get pods --selector a8s.a9s/replication-role=master
 
 NAME                  READY   STATUS    RESTARTS   AGE
 sample-pg-cluster-0   3/3     Running   0          19m
@@ -467,14 +494,13 @@ tmux) so that we can see the output of the watch command from above as well as t
 will execute.
 
 ```shell
-# Exec into the patroni container and use the patronictl binary ot force a failover
-kubectl exec -it sample-pg-cluster-0 -c postgres -- /usr/local/bin/patronictl failover
+kubectl exec --stdin --tty sample-pg-cluster-0 --container postgres -- /usr/local/bin/patronictl failover
 ```
 
 which should result in:
 
 ```shell
-Candidate ['sample-pg-cluster-0', 'sample-pg-cluster-2'] []:
+Candidate ['sample-pg-cluster-1', 'sample-pg-cluster-2'] []:
 ```
 
 Now we have to enter one of the standbys listed in the returned array (it doesn't matter which
@@ -482,7 +508,7 @@ one we choose).
 
 ```shell
 # Enter one of the replicas listed in the returned prompt from patronictl
-Candidate ['sample-pg-cluster-0', 'sample-pg-cluster-2'] []: sample-pg-cluster-2
+Candidate ['sample-pg-cluster-1', 'sample-pg-cluster-2'] []: sample-pg-cluster-2
 ```
 
 which should give us an output similar to
@@ -492,23 +518,23 @@ Current cluster topology
 + Cluster: sample-pg-cluster (7155482187446120565) -----+----+-----------+
 | Member              | Host        | Role    | State   | TL | Lag in MB |
 +---------------------+-------------+---------+---------+----+-----------+
-| sample-pg-cluster-0 | 10.244.3.19 | Replica | running |  6 |         0 |
-| sample-pg-cluster-1 | 10.244.2.17 | Replica | running |  6 |         0 |
-| sample-pg-cluster-2 | 10.244.1.24 | Leader  | running |  6 |           |
+| sample-pg-cluster-0 | 10.244.3.19 | Leader  | running |  1 |           |
+| sample-pg-cluster-1 | 10.244.2.17 | Replica | running |  1 |         0 |
+| sample-pg-cluster-2 | 10.244.1.24 | Replica | running |  1 |         0 |
 +---------------------+-------------+---------+---------+----+-----------+
-Are you sure you want to failover cluster sample-pg-cluster, demoting current master sample-pg-cluster-2? [y/N]:
+Are you sure you want to failover cluster sample-pg-cluster, demoting current master sample-pg-cluster-0? [y/N]:
 ```
 
 Now we need to enter `y` in order to approve the failover. We should get something similar to
 
 ```shell
-2022-10-18 07:37:26.90871 Successfully failed over to "sample-pg-cluster-1"
+2022-10-18 07:37:26.90871 Successfully failed over to "sample-pg-cluster-2"
 + Cluster: sample-pg-cluster (7155482187446120565) -----+----+-----------+
 | Member              | Host        | Role    | State   | TL | Lag in MB |
 +---------------------+-------------+---------+---------+----+-----------+
-| sample-pg-cluster-0 | 10.244.3.19 | Replica | running |  6 |         0 |
-| sample-pg-cluster-1 | 10.244.2.17 | Leader  | running |  6 |           |
-| sample-pg-cluster-2 | 10.244.1.24 | Replica | stopped |    |   unknown |
+| sample-pg-cluster-0 | 10.244.3.19 | Replica | stopped |    |   unknown |
+| sample-pg-cluster-1 | 10.244.2.17 | Replica | running |  1 |         0 |
+| sample-pg-cluster-2 | 10.244.1.24 | Leader  | running |  1 |           |
 +---------------------+-------------+---------+---------+----+-----------+
 ```
 
@@ -529,7 +555,6 @@ that instance and then show that the new configuration parameters have been appl
 First we want to create an instance by executing:
 
 ```shell
-# Apply the postgresql manifest to create the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -586,7 +611,7 @@ spec:
 and re-apply the manifest:
 
 ```shell
-kubectl apply -f a8s-deployment/examples/postgresql-instance.yaml
+kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
 now we can again execute
@@ -615,14 +640,13 @@ instance as well as adding extensions to an existing one. It is worth mentioning
 PostgreSQL extensions is done via init-containers which means that when updating the list of
 extensions on an existing PostgreSQL instance a rolling update is triggered.
 
-To showcase the extension management capabilities of the PostgreSQL Operator, we first 
-create an instance without any extensions, check the total number of available extensions, 
+To showcase the extension management capabilities of the PostgreSQL Operator, we first
+create an instance without any extensions, check the total number of available extensions,
 update the instance manifest and then check again the total number of available extensions.
 
 We will start by creating a new instance without any extensions installed:
 
 ```shell
-# Apply the postgresql manifest to create the PostgreSQL instance
 kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 ```
 
@@ -632,15 +656,11 @@ and wait until all replicas are ready:
 watch kubectl get postgresql sample-pg-cluster --output template='{{.status}}'
 ```
 
-As soon as the PostgreSQL instance is ready (the number of ready replicas matches the number of 
-ready replicas) we can get the list (and number) of available PostgreSQL extensions by executing:
+As soon as the PostgreSQL instance is ready (the number of ready replicas matches the number of
+desired replicas) we can get the list (and number) of available PostgreSQL extensions by executing:
 
 ```shell
-# Execute a query against the PostgreSQL database to get the list of available extensions
-kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
-
-# TODO: Compile a complete demo of PostgreSQL extensions that contains actual usage of the installed
-# extension(s).
+kubectl exec sample-pg-cluster-0 --container postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
 ```
 
 which should result in:
@@ -707,7 +727,7 @@ kubectl apply --filename a8s-deployment/examples/postgresql-instance.yaml
 to update the existing PostgreSQL instance. By re-running
 
 ```shell
-kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
+kubectl exec sample-pg-cluster-0 --container postgres -- psql -U postgres -d a9s_apps_default_db -c "select * from pg_available_extensions;"
 ```
 
 we should get
@@ -738,7 +758,7 @@ as a result which indicates that the two desired extensions are indeed installed
 actually use those extensions we need to load them by running
 
 ```shell
-kubectl exec sample-pg-cluster-0 -c postgres -- psql -U postgres -d a9s_apps_default_db -c 'CREATE EXTENSION "pg_qualstats";'
+kubectl exec sample-pg-cluster-0 --container postgres -- psql -U postgres -d a9s_apps_default_db -c 'CREATE EXTENSION "pg_qualstats";'
 ```
 
 which should result in
@@ -752,14 +772,29 @@ which means that the extensions has been successfully loaded.
 
 ## Logging
 
-### Deploy OpenSearch, OpenSearch Dashboard, FluentD and FluentBit
+With a8s, we provide optional YAML manifests that deploy on the Kubernets cluster a logging stack to
+collect, store and analyze the logs of your data service instances and other pods running in the
+cluster.
 
-OpenSearch is the distributed, RESTful search and analytics engine which we
-use to store, search and manage our cluster's logs. The OpenSearch pods
-are deployed as a part of a [StatefulSet][statefulset] since they require
-persistent storage for the logs. This also allows us to span the pods over
-multiple availability zones for high availability in order to limit possible
-downtime.
+The logging stack is based on three technologies:
+
+- [OpenSearch][opensearch]: a search and analytics engine to store and analyze logs.
+- [Fluentd][fluentd]: a centralized logs collector.
+- [FluentBit][fluentbit]: a lightweight logs processor and forwarder.
+
+More precisely, the logging stack comprises:
+
+- A FluentBit [DaemonSet][daemonset] that collects all the logs from the pods on every Kubernetes
+  node and forwards them to a Fluentd aggregator.
+- A [StatefulSet][statefulset] that runs a Fluentd singleton that aggregates all the logs in the
+  cluster.
+- A [StatefulSet][statefulset] that runs an OpenSearch singleton that stores all the logs (after
+  having received them from the Fluentd aggregator) and exposes endpoints to query and analyze the
+  logs.
+- A [Deployment][deployment] that runs an OpenSearch dashboard singleton, which exposes a web
+  dashboard to query and analyze the logs via a GUI.
+
+### Deploy OpenSearch, OpenSearch Dashboard, FluentD and FluentBit
 
 **Warning:** The default OpenSearch config CAN cause issues on Minikube with a VM based driver as
 well as on most Kubernetes clusters on cloud infrastructure. A fix is described [here](https://github.com/anynines/a8s-deployment/blob/develop/docs/platform-operators/installing_framework.md#virtual-memory-usage).
@@ -767,7 +802,6 @@ well as on most Kubernetes clusters on cloud infrastructure. A fix is described 
 In order to deploy the logging stack execute the following command:
 
 ```shell
-# Apply the logging components using kustomize
 kubectl apply --kustomize a8s-deployment/deploy/logging
 ```
 
@@ -795,7 +829,6 @@ daemonset.apps/fluent-bit created
 Afterwards we will have to wait until the logging stack is up and running:
 
 ```shell
-# Wait for the Pods to be up and running
 watch kubectl get pod --namespace a8s-system --selector=a8s.anynines/logging
 ```
 
@@ -814,18 +847,6 @@ fluent-bit-5g7vx                            1/1     Running   0          13m
 fluent-bit-gwxnc                            1/1     Running   0          13m
 ```
 
-OpenSearch dashboard provides a browser-based analytics and search dashboard. We deploy it as a
-Kubernetes [Deployment][deployment] since we don't require storage for OpenSearch dashboard.
-
-In order to see logs for the Kubernetes instance via OpenSearch and OpenSearch dashboard,
-we need to install a `DaemonSet` that will collect those logs from the
-Kubernetes nodes and forward them to an Elasticsearch instance in our cluster.
-
-A `DaemonSet` ensures that all (or some) Nodes run a copy of a Pod. The pod in
-our case will run `fluentd`. The `fluentd` tool will read the a9s Kubernetes
-logs from the disk and forward them via logstash format to the Elasticsearch
-instance.
-
 ### Using OpenSearch Dashboard
 
 Use port-forward to connect to the OpenSearch Dashboard pod.
@@ -840,36 +861,36 @@ Open the OpenSearch dashboard in Browser link in browser.
 open http://localhost:5601
 ```
 
-Now click in the middle of the screen on the blue "OpenSearch Dashboards Visualize and analyze"
-button.
-
 ![opensearch1](images/opensearch/1.png)
 
-Click on the blue "Add your data" button.
+Select `Add data` and then click on the ≡ icon in the top left hand corner. In the menu
+select `Stack management` in the `Management` section.
 
 ![opensearch2](images/opensearch/2.png)
 
-Click on the blue "Create index pattern" button.
+Select `Index Patterns`.
 
 ![opensearch3](images/opensearch/3.png)
 
-Create an index pattern for `logstash-*`. And click `> Next step`
+Click on `Create Index pattern`.
 
 ![opensearch4](images/opensearch/4.png)
 
-Select `@timestamp` as a time filter field name. And then click
-`Create index pattern`.
+Create an index pattern for `logstash-*`. And click `> Next step`
 
 ![opensearch5](images/opensearch/5.png)
 
-Now click in the top left corner on the three bars to open the side menu and
-click on "Discover".
+Select `@timestamp` as a time filter field name. And then click `Create index pattern`.
 
 ![opensearch6](images/opensearch/6.png)
 
-Now we should be able to see the logs of the instance.
+Go back to the discover tab.
 
 ![opensearch7](images/opensearch/7.png)
+
+The logs will be available to interact using your new filter.
+
+![opensearch8](images/opensearch/8.png)
 
 ## Metrics
 
@@ -900,8 +921,7 @@ that is defined in the `prometheus-service.yaml` is used by the Grafana
 dashboard.
 
 ```shell
-# Deploy the metrics stack using static yaml files
-kubectl apply --recursive -f a8s-deployment/deploy/metrics/
+kubectl apply --recursive --filename a8s-deployment/deploy/metrics/
 ```
 
 The `a8s-system` namespace should now list pods prefixed with the name
@@ -909,7 +929,6 @@ The `a8s-system` namespace should now list pods prefixed with the name
 stack are up and running. We can check this by executing
 
 ```shell
-# Wait for the Pods to be up and running
 watch kubectl get pod --namespace a8s-system --selector=a8s.anynines/metrics
 ```
 
@@ -932,7 +951,7 @@ dashboard.
 It is configured in a way to periodically send queries to the Prometheus
 service. By default, Grafana does not come with any dashboards. If we
 want to use one we either need to define it ourselves or we can import an
-existing one from the [Grafana Dashboards][https://grafana.com/grafana/dashboards]
+existing one from the [Grafana Dashboards](https://grafana.com/grafana/dashboards)
 page using the Dashboard ID.
 
 #### Using Grafana Dashboard
@@ -941,7 +960,7 @@ After Grafana has been deployed we want to access the Grafana dashboard, so we n
 to the Grafana service:
 
 ```shell
-kubectl port-forward -n a8s-system service/grafana 3000 &
+kubectl port-forward --namespace a8s-system service/grafana 3000 &
 ```
 
 Now the Grafana dashboard can be accessed using:
@@ -971,7 +990,7 @@ Then Insert `8588` as the Dashboard ID and click on Load.
 
 ![Grafana4](images/grafana/4.png)
 
-Choose Prometheus as the data source. 
+Choose Prometheus as the data source.
 
 ![Grafana5](images/grafana/5.png)
 
@@ -983,24 +1002,33 @@ that are scraped by the Prometheus instance.
 In case we want to show metrics of the Kubernetes API server we can use the pre build metrics
 dashboard with the ID `12006`.
 
-# Requirements
+## Requirements
 
 In order to demonstrate the a8s data services framework, we need the following
 things:
+
 - Kubernetes to demonstrate the product on (best would be a cluster with 3-5 nodes)
 - this repo that contains some yaml manifests
 
 The images for the demo are currently stored on a publicly available AWS ECR registry,
 
-# TODOs
+## TODOs
 
 - [ ] Get sales engineer involved
 - [ ] What is the future product name?
 - [ ] Actual usage of PostgreSQL extensions
 - [ ] Add custom Grafana dashboard for our metrics
 - [ ] Improve Master Failover by introduction ChaosMesh
+- [ ] Compile a complete demo of PostgreSQL extensions that contains actual usage of the installed
+      extension(s).
 
-[a8s-deployment]: https://github.com/anynines/a8s-deployment
 [statefulSet]: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
 [deployment]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+[daemonset]: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
 [OLM installation]: https://sdk.operatorframework.io/docs/installation/
+[fluentd]: https://www.fluentd.org/
+[fluentbit]: https://fluentbit.io/
+[opensearch]: https://opensearch.org/
+[a8s-deployment]: https://github.com/anynines/a8s-deployment
+[watch]: https://linux.die.net/man/1/watch
+[watch installation]: https://www.bollyinside.com/articles/install-watch-command-on-mac-os/
