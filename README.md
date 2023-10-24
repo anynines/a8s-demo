@@ -580,11 +580,11 @@ which will return
 (1 row)
 ```
 
-Now we can proceed by updating the `max_connections` field within the manifest of the PostgreSQL
+Now we can proceed by adding a `maxConnections` parameter within the manifest of the PostgreSQL
 instance. Add the following lines to the spec field of the manifest:
 
 ```shell
-postgresConfiguration:
+parameters:
   maxConnections: 120
 ```
 
@@ -599,7 +599,7 @@ spec:
   replicas: 3
   volumeSize: 1Gi
   version: 14
-  postgresConfiguration:
+  parameters:
     maxConnections: 120
   resources:
     requests:
