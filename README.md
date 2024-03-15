@@ -1014,8 +1014,6 @@ The images for the demo are currently stored on a publicly available AWS ECR reg
 
 ## TODOs
 
-- [ ] Get sales engineer involved
-- [ ] What is the future product name?
 - [ ] Actual usage of PostgreSQL extensions
 - [ ] Add custom Grafana dashboard for our metrics
 - [ ] Improve Master Failover by introduction ChaosMesh
