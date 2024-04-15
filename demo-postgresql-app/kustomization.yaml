@@ -1,0 +1,3 @@
+resources:
+- demo-s3-app-deployment.yaml
+- demo-s3-app-service.yaml
