@@ -270,7 +270,7 @@ use the new PostgreSQL instance to store data.
 Show its manifest via this command:
 
 ```shell
-cat demo-app/demo-app-deployment.yaml
+cat demo-postgresql-app/demo-app-deployment.yaml
 ```
 
 First, we need to create a service binding resource that will configure a user for the demo app in
@@ -344,7 +344,7 @@ type: Opaque
 Now we can proceed with deploying the demo application:
 
 ```shell
-kubectl apply --kustomize demo-app/
+kubectl apply --kustomize demo-postgresql-app/
 ```
 
 Executing:
