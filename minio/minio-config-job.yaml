@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-config-job
+  namespace: minio-dev
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 4
+  template:
+    spec:      
+      containers:
+      - name: config
+        image: minio/mc
+        command: ["sh",  "-c", "/config/minio_config.sh"]
+        volumeMounts:
+          - mountPath: /config
+            name: minio-config-volume            
+      volumes:
+      - name: minio-config-volume
+        configMap: 
+          name: "minio-config-script"
+          # 493 in decimal = 755 octal
+          defaultMode: 493
+      restartPolicy: OnFailure
+  
