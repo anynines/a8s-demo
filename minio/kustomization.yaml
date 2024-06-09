@@ -9,4 +9,5 @@ configMapGenerator:
       disableNameSuffixHash: true
 
 resources:
+  - minio-dev.yaml
   - minio-config-job.yaml
