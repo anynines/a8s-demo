@@ -1,3 +1,7 @@
+# v1.3.1
+
+* Fixes demo app kustomizations for demo-postgresql-app and demo-s3-app.
+
 # v1.3.0
 
 * Adds `minio-dev.yml` to the minio `kustomization.yaml` to fully deploy minio using `kubectl apply -k`
