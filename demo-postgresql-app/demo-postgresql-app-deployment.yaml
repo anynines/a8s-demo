@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,24 +23,30 @@ spec:
           ports:
             - containerPort: 3000
           env:
-            - name: "POSTGRESQL_HOST"
+            - name: POSTGRESQL_HOST
               valueFrom:
                 secretKeyRef:
-                  name: sb-sample-service-binding
-                  key: instance_service
-            - name: "POSTGRESQL_USERNAME"
+                  name: example-connection-ssl
+                  key: host
+            - name: POSTGRESQL_PORT
               valueFrom:
                 secretKeyRef:
-                  name: sb-sample-service-binding
+                  name: example-connection-ssl
+                  key: port
+            - name: POSTGRESQL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: example-connection-ssl
                   key: username
-            - name: "POSTGRESQL_PASSWORD"
+            - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: sb-sample-service-binding
+                  name: example-connection-ssl
                   key: password
-            - name: "POSTGRESQL_PORT"
-              value: "5432"
-            - name: "POSTGRESQL_DATABASE"
-              value: "a9s_apps_default_db"
-            - name: "POSTGRESQL_SSLMODE"
-              value: "require"
+            - name: POSTGRESQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: example-connection-ssl
+                  key: db_name
+            - name: POSTGRESQL_SSLMODE
+              value: require
