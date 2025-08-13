@@ -26,27 +26,27 @@ spec:
             - name: POSTGRESQL_HOST
               valueFrom:
                 secretKeyRef:
-                  name: example-connection-ssl
+                  name: example-connection
                   key: host
             - name: POSTGRESQL_PORT
               valueFrom:
                 secretKeyRef:
-                  name: example-connection-ssl
+                  name: example-connection
                   key: port
             - name: POSTGRESQL_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: example-connection-ssl
+                  name: example-connection
                   key: username
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: example-connection-ssl
+                  name: example-connection
                   key: password
             - name: POSTGRESQL_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: example-connection-ssl
+                  name: example-connection
                   key: db_name
             - name: POSTGRESQL_SSLMODE
               value: require
